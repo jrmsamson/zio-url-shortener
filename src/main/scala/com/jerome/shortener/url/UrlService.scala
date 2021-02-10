@@ -26,14 +26,11 @@ object UrlService {
     HttpRoutes.of[UrlTask] {
       case GET -> Root / urlAlias =>
         UrlRepository
-          .get(Url.resolveUrlId(urlAlias))
+          .get(UrlIdResolver(urlAlias).id)
           .tapError {
-            case _: UrlNotFound => Task.succeed(())
             case error: Exception =>
-              for {
-                _ <- logging.log.error(s"Error getting url for the given url alias: $urlAlias")
-                _ <- logging.log.error(error.getLocalizedMessage)
-              } yield ()
+              logging.log.error(s"Error getting url for the given url alias: $urlAlias") *>
+                logging.log.error(error.getLocalizedMessage)
           }
           .foldM(
             {
@@ -53,11 +50,11 @@ object UrlService {
           (for {
             apiConfig <- Config.apiConfig
             url       <- UrlRepository.insert(urlRequest.url.value)
-          } yield s"http://${apiConfig.baseUrl}:${apiConfig.port}/${Url.generateUrlAlias(url)}")
+          } yield s"http://${apiConfig.baseUrl}:${apiConfig.port}/${UrlShorten(url).shorten}")
             .tapError {
               case ex: Exception =>
-                logging.log.error(s"Error occurred minifying url: $urlRequest")
-                logging.log.error(ex.getLocalizedMessage)
+                logging.log.error(s"Error occurred minifying url: $urlRequest") *>
+                  logging.log.error(ex.getLocalizedMessage)
             }
             .foldM(
               _ => InternalServerError("Error minifying url"),

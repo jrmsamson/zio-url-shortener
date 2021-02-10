@@ -4,7 +4,6 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / organization := "com.jerome"
 ThisBuild / organizationName := "jerome"
 
-val ScalaTestVersion     = "3.2.2"
 val ZioVersion           = "1.0.3"
 val ZioCatsVersion       = "2.2.0.1"
 val ZioLoggingVersion    = "0.5.4"
@@ -21,7 +20,6 @@ lazy val root = (project in file("."))
   .settings(
     name := "url-shortener-service",
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % ScalaTestVersion,
       // ZIO
       "dev.zio" %% "zio"               % ZioVersion,
       "dev.zio" %% "zio-interop-cats"  % ZioCatsVersion,
@@ -29,7 +27,8 @@ lazy val root = (project in file("."))
       "dev.zio" %% "zio-logging-slf4j" % ZioLoggingVersion,
       "dev.zio" %% "zio-test"          % ZioVersion % "test",
       "dev.zio" %% "zio-test-sbt"      % ZioVersion % "test",
-      // PureConfig
+      "dev.zio" %% "zio-test-magnolia" % ZioVersion % "test",
+    // PureConfig
       "com.github.pureconfig" %% "pureconfig" % PureConfigVersion,
       // Slf4j
       "org.slf4j" % "slf4j-log4j12" % Slf4jVersion,
@@ -46,8 +45,6 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-parser"  % CirceVersion,
       // refined
       "eu.timepit" %% "refined" % RefinedVersion,
-      // scalatestplus
-      "org.scalatestplus" %% "scalacheck-1-15" % ScalaTestPlusVersion % "test",
       compilerPlugin(("org.typelevel" % "kind-projector" % KindProjectorVersion).cross(CrossVersion.full))
     ),
     testFrameworks ++= Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
@@ -81,7 +78,7 @@ lazy val root = (project in file("."))
       "-Ywarn-numeric-widen", // Warn when numerics are widened.
       "-Ywarn-unused:implicits", // Warn if an implicit parameter is unused.
       "-Ywarn-unused:imports", // Warn if an import selector is not referenced.
-      "-Ywarn-unused:locals", // Warn if a local definition is unused.
+      //"-Ywarn-unused:locals", // Warn if a local definition is unused.
       "-Ywarn-unused:params", // Warn if a value parameter is unused.
       "-Ywarn-unused:patvars", // Warn if a variable bound in a pattern is unused.
       "-Ywarn-unused:privates", // Warn if a private member is unused.
