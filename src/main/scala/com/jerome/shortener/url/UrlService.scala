@@ -46,21 +46,22 @@ object UrlService {
             }
           )
       case request @ POST -> Root =>
-        request.decode[UrlShortenRequest] { urlRequest =>
-          (for {
-            apiConfig <- Config.apiConfig
-            url       <- UrlRepository.insert(urlRequest.url.value)
-          } yield s"http://${apiConfig.baseUrl}:${apiConfig.port}/${UrlShorten(url).shorten}")
-            .tapError {
-              case ex: Exception =>
-                logging.log.error(s"Error occurred minifying url: $urlRequest") *>
-                  logging.log.error(ex.getLocalizedMessage)
-            }
-            .foldM(
-              _ => InternalServerError("Error minifying url"),
-              urlAlias => Created(UrlShortenedResponse(urlAlias))
-            )
-        }
+        request
+          .decode[UrlShortenRequest] { urlRequest =>
+            (for {
+              apiConfig <- Config.apiConfig
+              url       <- UrlRepository.insert(urlRequest.url.value)
+            } yield s"http://${apiConfig.baseUrl}:${apiConfig.port}/${UrlShorten(url).shorten}")
+              .tapError {
+                case ex: Exception =>
+                  logging.log.error(s"Error occurred minifying url: $urlRequest") *>
+                    logging.log.error(ex.getLocalizedMessage)
+              }
+              .foldM(
+                _ => InternalServerError("Error minifying url"),
+                urlAlias => Created(UrlShortenedResponse(urlAlias))
+              )
+          }
     }
   }
 }

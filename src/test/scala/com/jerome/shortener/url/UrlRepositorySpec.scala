@@ -10,7 +10,7 @@ import zio.test.environment.TestEnvironment
 
 object UrlRepositorySpec extends DefaultRunnableSpec {
 
-  override def spec =
+  override def spec: ZSpec[TestEnvironment, Any] =
     suite("UrlRepository Integration test")(
       testM("should insert and get urls from DB") {
         for {
@@ -26,7 +26,7 @@ object UrlRepositorySpec extends DefaultRunnableSpec {
           assert(notFound)(isLeft(equalTo(UrlNotFound(nonExistingUrlId)))) &&
             assert(retrieved)(equalTo(inserted))
       }
-    ).provideSomeLayer[TestEnvironment](
+    ).provideCustomLayer(
       (Config.live >+> Blocking.live >+> DBTransactor.live >+> UrlRepository.live).orDie
     )
 }

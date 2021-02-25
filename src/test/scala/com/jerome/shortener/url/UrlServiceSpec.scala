@@ -9,7 +9,7 @@ import io.circe.syntax._
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import org.http4s.headers.Location
 import org.http4s.implicits._
-import zio.{RIO, ZEnv}
+import zio.RIO
 import zio.interop.catz._
 import zio.logging.Logging
 import zio.test.Assertion._
@@ -17,6 +17,7 @@ import zio.test.{TestConfig => _, _}
 import zio.logging.slf4j.Slf4jLogger
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.auto._
+import zio.test.environment.TestEnvironment
 
 object UrlServiceSpec extends DefaultRunnableSpec {
   type UrlServiceLayer = UrlRepository with Config with Logging
@@ -28,7 +29,7 @@ object UrlServiceSpec extends DefaultRunnableSpec {
 
   private val urlService = UrlService.routes[UrlServiceLayer].orNotFound
 
-  override def spec = {
+  override def spec: ZSpec[TestEnvironment, Any] = {
     suite("UrlServiceSpec unit tests")(
       testM("should shorten an url") {
         val urlMinified: String Refined string.Url = "http://www.nonexistingurl.com"
@@ -47,12 +48,20 @@ object UrlServiceSpec extends DefaultRunnableSpec {
             )
           )
         } yield
-          assert(result.status)(equalTo(Status.Created)) &&
-            assert(urlResponse.urlShortened)(equalTo(s"http://${apiConfig.baseUrl}:${apiConfig.port}$urlAlias")) &&
-            assert(url.status)(equalTo(Status.MovedPermanently)) &&
-            assert(url.headers)(equalTo(Headers.of(Location(Uri.unsafeFromString(s"$urlMinified")))))
+          assert(result)(hasField("status", _.status, equalTo(Status.Created))) &&
+            assert(urlResponse)(
+              equalTo(UrlShortenedResponse(s"http://${apiConfig.baseUrl}:${apiConfig.port}$urlAlias"))
+            ) &&
+            assert(url)(hasField("status", _.status, equalTo(Status.MovedPermanently))) &&
+            assert(url)(
+              hasField(
+                "headers",
+                _.headers,
+                equalTo(Headers.of(Location(Uri.unsafeFromString(s"$urlMinified"))))
+              )
+            )
       },
-    ).provideSomeLayer[ZEnv](
+    ).provideCustomLayer(
       Slf4jLogger.make((_, msg) => msg) ++ TestConfig.test >+> TestUrlRepository.test
     )
   }

@@ -1,6 +1,6 @@
 package com.jerome.shortener.url
 
-import zio.{Ref, Task, ULayer, ZLayer}
+import zio.{Ref, Task, ULayer}
 
 class TestUrlRepository(urls: Ref[Seq[Url]]) extends UrlRepository.Service {
   override def get(id: Int): Task[Url] = urls.get.flatMap { urls =>
@@ -19,5 +19,5 @@ class TestUrlRepository(urls: Ref[Seq[Url]]) extends UrlRepository.Service {
 
 object TestUrlRepository {
   val test: ULayer[UrlRepository] =
-    ZLayer.fromEffect(Ref.make(Seq.empty[Url]).map(new TestUrlRepository(_)))
+    Ref.make(Seq.empty[Url]).map(new TestUrlRepository(_)).toLayer
 }

@@ -48,7 +48,7 @@ object Main extends App {
       } yield ()
 
     program
-      .provideSomeLayer[ZEnv](appLayer)
+      .provideCustomLayer(appLayer)
       .tapError(error => putStrLn(s"Error occurred executing service: $error"))
       .exitCode
   }

@@ -1,4 +1,3 @@
-
 ThisBuild / scalaVersion := "2.13.4"
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / organization := "com.jerome"
@@ -28,7 +27,7 @@ lazy val root = (project in file("."))
       "dev.zio" %% "zio-test"          % ZioVersion % "test",
       "dev.zio" %% "zio-test-sbt"      % ZioVersion % "test",
       "dev.zio" %% "zio-test-magnolia" % ZioVersion % "test",
-    // PureConfig
+      // PureConfig
       "com.github.pureconfig" %% "pureconfig" % PureConfigVersion,
       // Slf4j
       "org.slf4j" % "slf4j-log4j12" % Slf4jVersion,
