@@ -10,7 +10,7 @@ object UrlSpec extends DefaultRunnableSpec {
   override def spec: ZSpec[TestEnvironment, Any] =
     suite("Url unit tests")(
       testM("url id should be used to generate url alias") {
-        implicit val genInt: DeriveGen[Int] = instance(Gen.anyInt.filter(_ > 0))
+        implicit val genInt: DeriveGen[Int] = instance(Gen.anyInt.map(int => if (int >= 1) int else 1))
         check(DeriveGen[Url]) { url =>
           val urlShorten    = UrlShorten(url)
           val urlIdResolver = UrlIdResolver(urlShorten.shorten)

@@ -15,9 +15,9 @@ object DBTransactor {
       for {
         config    <- Config.dbConfig.toManaged_
         connectEC <- ZIO.descriptor.map(_.executor.asEC).toManaged_
-        blockingEC <- blocking.blocking {
-          ZIO.descriptor.map(_.executor.asEC)
-        }.toManaged_
+        blockingEC <- blocking
+          .blocking(ZIO.descriptor.map(_.executor.asEC))
+          .toManaged_
         transactor <- mkTransactor(config, connectEC, blockingEC)
       } yield transactor
     )
