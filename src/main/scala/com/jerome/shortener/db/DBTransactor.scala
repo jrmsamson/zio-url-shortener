@@ -4,8 +4,8 @@ import cats.effect.Blocker
 import com.jerome.shortener.config.Config
 import doobie.Transactor
 import doobie.h2.H2Transactor
-import zio.blocking.Blocking
-import zio.{TaskManaged, RLayer, Task, ZIO, ZLayer, blocking}
+import zio.blocking.{Blocking, blockingExecutor}
+import zio.{RLayer, Task, TaskManaged, ZIO, ZLayer}
 
 import scala.concurrent.ExecutionContext
 
@@ -13,11 +13,9 @@ object DBTransactor {
   val live: RLayer[Config with Blocking, DBTransactor] =
     ZLayer.fromManaged(
       for {
-        config    <- Config.dbConfig.toManaged_
-        connectEC <- ZIO.descriptor.map(_.executor.asEC).toManaged_
-        blockingEC <- blocking
-          .blocking(ZIO.descriptor.map(_.executor.asEC))
-          .toManaged_
+        config     <- Config.dbConfig.toManaged_
+        connectEC  <- ZIO.descriptor.map(_.executor.asEC).toManaged_
+        blockingEC <- blockingExecutor.map(_.asEC).toManaged_
         transactor <- mkTransactor(config, connectEC, blockingEC)
       } yield transactor
     )
