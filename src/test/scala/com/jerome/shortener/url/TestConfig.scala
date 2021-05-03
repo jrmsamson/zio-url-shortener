@@ -1,8 +1,8 @@
 package com.jerome.shortener.url
 
-import com.jerome.shortener.config.Config
-import com.jerome.shortener.config.Config.{ApiConfig, AppConfig, DbConfig}
-import zio.{ULayer, ZLayer}
+import com.jerome.shortener.infrastructure.config.Config
+import com.jerome.shortener.infrastructure.config.Config._
+import zio._
 
 object TestConfig {
   val test: ULayer[Config] = ZLayer.fromFunction { _ =>

@@ -1,8 +1,9 @@
 package com.jerome.shortener.url
 
-import com.jerome.shortener.config.Config
-import eu.timepit.refined.string
-import io.circe.{Decoder, Encoder}
+import com.jerome.shortener.domain.repository.UrlRepository
+import com.jerome.shortener.infrastructure.config.Config
+import com.jerome.shortener.infrastructure.routes.model._
+import io.circe._
 import org.http4s._
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -15,11 +16,12 @@ import zio.logging.Logging
 import zio.test.Assertion._
 import zio.test.{TestConfig => _, _}
 import zio.logging.slf4j.Slf4jLogger
-import eu.timepit.refined.api.Refined
 import eu.timepit.refined.auto._
 import zio.test.environment.TestEnvironment
+import com.jerome.shortener.infrastructure.routes.UrlRoutes
+import com.jerome.shortener.infrastructure.routes.circe.implicits._
 
-object UrlServiceSpec extends DefaultRunnableSpec {
+object UrlRoutesSpec extends DefaultRunnableSpec {
   type UrlServiceLayer = UrlRepository with Config with Logging
   type UrlTask[A]      = RIO[UrlServiceLayer, A]
 
@@ -27,17 +29,16 @@ object UrlServiceSpec extends DefaultRunnableSpec {
   implicit def circeJsonEncoder[A](implicit decoder: Encoder[A]): EntityEncoder[UrlTask, A] =
     jsonEncoderOf[UrlTask, A]
 
-  private val urlService = UrlService.routes[UrlServiceLayer].orNotFound
+  private val urlService = UrlRoutes.routes[UrlServiceLayer].orNotFound
 
   override def spec: ZSpec[TestEnvironment, Any] = {
     suite("UrlServiceSpec unit tests")(
       testM("should shorten an url") {
-        val urlMinified: String Refined string.Url = "http://www.nonexistingurl.com"
         for {
           apiConfig <- Config.apiConfig
           result <- urlService.run(
             Request[UrlTask](method = Method.POST, uri = Uri.unsafeFromString("/"))
-              .withEntity(UrlShortenRequest(urlMinified).asJson)
+              .withEntity(UrlShortenRequest("http://www.nonexistingurl.com").asJson)
           )
           urlResponse <- result.as[UrlShortenedResponse]
           urlAlias = urlResponse.urlShortened.replace(s"http://${apiConfig.baseUrl}:${apiConfig.port}", "")
@@ -57,7 +58,7 @@ object UrlServiceSpec extends DefaultRunnableSpec {
               hasField(
                 "headers",
                 _.headers,
-                equalTo(Headers.of(Location(Uri.unsafeFromString(s"$urlMinified"))))
+                equalTo(Headers.of(Location(Uri.unsafeFromString("http://www.nonexistingurl.com"))))
               )
             )
       },

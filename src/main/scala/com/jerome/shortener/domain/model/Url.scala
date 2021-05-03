@@ -1,16 +1,14 @@
-package com.jerome.shortener.url
+package com.jerome.shortener.domain.model
 
 import eu.timepit.refined.api.Refined
+import eu.timepit.refined.predicates.all._
 import eu.timepit.refined.string
+
 import scala.annotation.tailrec
+import scala.util.chaining._
 
-final case class Url(id: Int, url: String)
-final case class UrlNotFound(id: Int) extends Exception
-final case class UrlShortenRequest(url: String Refined string.Url)
-final case class UrlShortenedResponse(urlShortened: String)
-final case class UrlShorten(url: Url) {
-  import UrlShorten._
-
+final case class Url(id: Url.Id, url: String Refined string.Url) {
+  import Url._
   // Alias = [a-zA-Z0-9]+
   def shorten: String = {
     @tailrec
@@ -18,13 +16,15 @@ final case class UrlShorten(url: Url) {
       if (num > 0) loop(num / ModBase62, (num % ModBase62) +: accu)
       else accu
     }
-    loop(url.id, Seq.empty)
+    loop(id.value, Seq.empty)
       .flatMap(IntModBase62ToLetterMap.get)
       .mkString
   }
 }
 
-object UrlShorten {
+object Url {
+  final case class Id(value: Int) extends AnyVal
+
   val ModBase62 = 62
   val IntModBase62ToLetterMap: Map[Int, String] = {
     // Index [1-62] inclusive
@@ -35,12 +35,9 @@ object UrlShorten {
   val LetterToIntModBase62: Map[String, Int] = IntModBase62ToLetterMap.map {
     case (intModBase62, letter) => letter -> intModBase62
   }
-}
 
-final case class UrlIdResolver(urlAlias: String) { self =>
-  import UrlShorten._
-  def id: Int =
-    urlAlias
+  def idFromAlias(urlAlias: String Refined NonEmpty): Url.Id =
+    urlAlias.value
       .flatMap(letter => LetterToIntModBase62.get(letter.toString))
       .reverse
       .zipWithIndex
@@ -48,4 +45,5 @@ final case class UrlIdResolver(urlAlias: String) { self =>
         case (urlId, (intModBase62, base62Exp)) =>
           intModBase62 * math.pow(ModBase62.toDouble, base62Exp.toDouble).toInt + urlId
       }
+      .pipe(Url.Id)
 }

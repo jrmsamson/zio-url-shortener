@@ -1,9 +1,11 @@
 package com.jerome.shortener
 
 import cats.effect.{ExitCode => CatsExitCode}
-import com.jerome.shortener.config.Config
-import com.jerome.shortener.db.DBTransactor
-import com.jerome.shortener.url.{UrlRepository, UrlService}
+import com.jerome.shortener.domain.repository.UrlRepository
+import com.jerome.shortener.infrastructure.config.Config
+import com.jerome.shortener.infrastructure.database._
+import com.jerome.shortener.infrastructure.repository.DoobieUrlRepository
+import com.jerome.shortener.infrastructure.routes.UrlRoutes
 import org.http4s.implicits._
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
@@ -25,8 +27,8 @@ object Main extends App {
     Slf4jLogger.make((_, msg) => msg) >+>
       Config.live >+>
       Blocking.live >+>
-      DBTransactor.live >+>
-      UrlRepository.live
+      H2DBTransactor.live >+>
+      DoobieUrlRepository.live
 
   override def run(args: List[String]): ZIO[ZEnv, Nothing, ExitCode] = {
     val program: ZIO[AppEnvironment, Throwable, Unit] =
@@ -48,7 +50,7 @@ object Main extends App {
         .runtime[AppEnvironment]
         .flatMap { implicit rts =>
           val httpApp = Router[AppTask](
-            "" -> UrlService.routes
+            "" -> UrlRoutes.routes
           ).orNotFound
 
           BlazeServerBuilder[AppTask](rts.platform.executor.asEC)
