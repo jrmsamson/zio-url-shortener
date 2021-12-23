@@ -1,4 +1,4 @@
-package com.jerome.shortener.domain.model
+package com.jerome.shortener
 
 sealed trait DomainError
 sealed trait GetUrlRepositoryError extends DomainError

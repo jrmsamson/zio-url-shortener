@@ -1,6 +1,5 @@
-package com.jerome.shortener.url
+package com.jerome.shortener
 
-import com.jerome.shortener.domain.model.Url
 import zio.test.Assertion._
 import zio.test._
 import zio.test.environment.TestEnvironment
