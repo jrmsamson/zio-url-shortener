@@ -1,5 +1,5 @@
 
-# Simple URL Shortener built the following stack:
+# Simple URL Shortener built with the following stack:
 
 * ZIO
 * http4s
