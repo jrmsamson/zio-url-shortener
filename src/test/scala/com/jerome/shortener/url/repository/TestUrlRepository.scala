@@ -1,6 +1,10 @@
 package com.jerome.shortener
 
-import com.jerome.shortener.GetUrlRepositoryError._
+import com.jerome.shortener.model.GetUrlRepositoryError
+import com.jerome.shortener.model.GetUrlRepositoryError._
+import com.jerome.shortener.model.SaveUrlRepositoryError
+import com.jerome.shortener.model.Url
+import com.jerome.shortener.repository.UrlRepository
 import zio._
 
 class TestUrlRepository(urls: Ref[Seq[Url]]) extends UrlRepository {

@@ -1,4 +1,4 @@
-package com.jerome.shortener
+package com.jerome.shortener.model
 
 import io.circe._
 import io.circe.generic.auto._

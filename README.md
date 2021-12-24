@@ -5,3 +5,4 @@
 * http4s
 * Circe
 * Doobie
+* PureConfig

@@ -1,5 +1,11 @@
-package com.jerome.shortener
+package com.jerome.shortener.route
 
+import com.jerome.shortener.TestConfig
+import com.jerome.shortener.TestUrlRepository
+import com.jerome.shortener.config.AppConfig
+import com.jerome.shortener.model.UrlShortenRequest
+import com.jerome.shortener.model.UrlShortenedResponse
+import com.jerome.shortener.repository.UrlRepository
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -25,7 +31,7 @@ object UrlRoutesSpec extends ZIOSpecDefault {
     suite("UrlServiceSpec unit tests")(
       test("should shorten an url") {
         for {
-          apiConfig <- AppConfig.apiConfig
+          apiConfig <- AppConfig.getApiConfig
           result <- urlService.run(
                       Request[UrlTask](method = Method.POST, uri = Uri.unsafeFromString("/"))
                         .withEntity(UrlShortenRequest("http://www.nonexistingurl.com").asJson)
@@ -51,8 +57,9 @@ object UrlRoutesSpec extends ZIOSpecDefault {
             )
           )
       }
-    ).provideCustomLayer(
-      TestConfig.test >+> TestUrlRepository.test
+    ).provide(
+      TestConfig.test,
+      TestUrlRepository.test
     )
 
 }

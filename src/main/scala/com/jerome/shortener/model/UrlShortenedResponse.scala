@@ -1,3 +1,3 @@
-package com.jerome.shortener
+package com.jerome.shortener.model
 
 final case class UrlShortenedResponse(urlShortened: String)

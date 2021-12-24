@@ -1,5 +1,6 @@
 package com.jerome.shortener
 
+import com.jerome.shortener.config._
 import zio._
 
 object TestConfig {

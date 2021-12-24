@@ -1,4 +1,4 @@
-package com.jerome.shortener
+package com.jerome.shortener.model
 
 import zio._
 import zio.test._

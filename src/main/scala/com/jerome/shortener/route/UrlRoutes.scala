@@ -1,6 +1,13 @@
-package com.jerome.shortener
+package com.jerome.shortener.route
 
-import com.jerome.shortener.GetUrlRepositoryError._
+import com.jerome.shortener.config.AppConfig
+import com.jerome.shortener.model.GetUrlRepositoryError
+import com.jerome.shortener.model.GetUrlRepositoryError.UrlNotFound
+import com.jerome.shortener.model.SaveUrlRepositoryError
+import com.jerome.shortener.model.Url
+import com.jerome.shortener.model.UrlShortenRequest
+import com.jerome.shortener.model.UrlShortenedResponse
+import com.jerome.shortener.repository.UrlRepository
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -47,7 +54,7 @@ object UrlRoutes {
         request
           .decode[UrlShortenRequest] { urlRequest =>
             (for {
-              apiConfig <- AppConfig.apiConfig
+              apiConfig <- AppConfig.getApiConfig
               url       <- UrlRepository.save(urlRequest.url)
             } yield s"http://${apiConfig.baseUrl}:${apiConfig.port}/${url.shorten}")
               .foldZIO(

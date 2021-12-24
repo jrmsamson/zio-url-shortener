@@ -1,4 +1,4 @@
-package com.jerome.shortener
+package com.jerome.shortener.model
 
 import scala.annotation.tailrec
 import scala.util.chaining._
@@ -11,6 +11,7 @@ final case class Url(id: Url.Id, url: String) {
     def loop(num: Int, accu: Seq[Int]): Seq[Int] =
       if (num > 0) loop(num / ModBase62, (num % ModBase62) +: accu)
       else accu
+
     loop(id.value, Seq.empty)
       .flatMap(IntModBase62ToLetterMap.get)
       .mkString

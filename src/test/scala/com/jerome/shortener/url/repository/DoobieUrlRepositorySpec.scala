@@ -1,14 +1,17 @@
-package com.jerome.shortener
+package com.jerome.shortener.repository
 
-import com.jerome.shortener.GetUrlRepositoryError._
+import com.jerome.shortener.model.GetUrlRepositoryError._
+import com.jerome.shortener.model.Url
+import com.jerome.shortener.config.AppConfig
+import com.jerome.shortener.database.H2DBTransactor
 import zio.test.Assertion._
 import zio.test.ZIOSpecDefault
 import zio.test.{TestConfig => _, _}
 
-object UrlRepositorySpec extends ZIOSpecDefault {
+object DoobieUrlRepositorySpec extends ZIOSpecDefault {
 
   override def spec: ZSpec[TestEnvironment, Any] =
-    suite("UrlRepository Integration test")(
+    suite("DoobieUrlRepositorySpec")(
       test("should insert and get urls from DB") {
         for {
           _               <- UrlRepository.createTable
@@ -19,7 +22,9 @@ object UrlRepositorySpec extends ZIOSpecDefault {
         } yield assert(notFound)(isLeft(equalTo(UrlNotFound(Url.Id(nonExistingUrlId))))) &&
           assert(retrieved)(equalTo(inserted))
       }
-    ).provideCustomLayer(
-      (AppConfig.layer >+> H2DBTransactor.layer >+> DoobieUrlRepository.layer).orDie
+    ).provide(
+      AppConfig.layer.orDie,
+      H2DBTransactor.layer.orDie,
+      DoobieUrlRepository.layer.orDie
     )
 }

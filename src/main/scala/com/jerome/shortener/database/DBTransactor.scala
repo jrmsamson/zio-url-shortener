@@ -1,4 +1,4 @@
-package com.jerome.shortener
+package com.jerome.shortener.database
 
 import doobie.util.transactor.Transactor
 import zio._
@@ -9,5 +9,5 @@ trait DBTransactor {
 
 object DBTransactor {
   def getTransactor: RManaged[DBTransactor, Transactor[Task]] =
-    ZManaged.environmentWithManaged(_.get.getTransactor)
+    ZManaged.serviceWithManaged(_.getTransactor)
 }
