@@ -3,24 +3,25 @@ package com.jerome.shortener.model
 import scala.annotation.tailrec
 import scala.util.chaining._
 
-final case class Url(id: Url.Id, url: String) {
-  import Url._
+final case class Url(id: UrlId, url: String)
+
+final case class UrlId(value: Int) extends AnyVal {
+  import UrlId._
+
   // Alias = [a-zA-Z0-9]+
-  def shorten: String = {
+  def generateAlias: String = {
     @tailrec
     def loop(num: Int, accu: Seq[Int]): Seq[Int] =
       if (num > 0) loop(num / ModBase62, (num % ModBase62) +: accu)
       else accu
 
-    loop(id.value, Seq.empty)
+    loop(value, Seq.empty)
       .flatMap(IntModBase62ToLetterMap.get)
       .mkString
   }
 }
 
-object Url {
-  final case class Id(value: Int) extends AnyVal
-
+object UrlId {
   val ModBase62 = 62
   val IntModBase62ToLetterMap: Map[Int, String] = {
     // Index [1-62] inclusive
@@ -32,7 +33,7 @@ object Url {
     letter -> intModBase62
   }
 
-  def idFromAlias(urlAlias: String): Url.Id =
+  def fromAlias(urlAlias: String): UrlId =
     urlAlias
       .flatMap(letter => LetterToIntModBase62.get(letter.toString))
       .reverse
@@ -40,5 +41,5 @@ object Url {
       .foldLeft(0) { case (urlId, (intModBase62, base62Exp)) =>
         intModBase62 * math.pow(ModBase62.toDouble, base62Exp.toDouble).toInt + urlId
       }
-      .pipe(Url.Id)
+      .pipe(new UrlId(_))
 }

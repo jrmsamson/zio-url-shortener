@@ -5,6 +5,7 @@ import com.jerome.shortener.model.GetUrlRepositoryError
 import com.jerome.shortener.model.GetUrlRepositoryError.UrlNotFound
 import com.jerome.shortener.model.SaveUrlRepositoryError
 import com.jerome.shortener.model.Url
+import com.jerome.shortener.model.UrlId
 import com.jerome.shortener.model.UrlShortenRequest
 import com.jerome.shortener.model.UrlShortenedResponse
 import com.jerome.shortener.repository.UrlRepository
@@ -33,7 +34,7 @@ object UrlRoutes {
     HttpRoutes.of[UrlTask] {
       case GET -> Root / urlAlias =>
         UrlRepository
-          .get(Url.idFromAlias(urlAlias))
+          .get(UrlId.fromAlias(urlAlias))
           .foldZIO(
             {
               case UrlNotFound(_) =>
@@ -56,7 +57,7 @@ object UrlRoutes {
             (for {
               apiConfig <- AppConfig.getApiConfig
               url       <- UrlRepository.save(urlRequest.url)
-            } yield s"http://${apiConfig.baseUrl}:${apiConfig.port}/${url.shorten}")
+            } yield s"http://${apiConfig.baseUrl}:${apiConfig.port}/${url.id.generateAlias}")
               .foldZIO(
                 { case SaveUrlRepositoryError(exception) =>
                   ZIO.logError(s"Error minifying url $urlRequest: $exception") *>

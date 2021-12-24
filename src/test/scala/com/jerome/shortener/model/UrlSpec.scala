@@ -9,7 +9,7 @@ object UrlSpec extends ZIOSpecDefault {
     suite("Url unit tests")(
       test("url id should be used to generate url alias") {
         check(UrlGenerator.genUrl) { url =>
-          assert(Url.idFromAlias(url.shorten))(equalTo(url.id))
+          assert(UrlId.fromAlias(url.id.generateAlias))(equalTo(url.id))
         }
       }
     )

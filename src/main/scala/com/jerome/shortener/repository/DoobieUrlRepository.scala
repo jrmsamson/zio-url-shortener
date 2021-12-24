@@ -5,6 +5,7 @@ import com.jerome.shortener.model.GetUrlRepositoryError
 import com.jerome.shortener.model.GetUrlRepositoryError.UrlNotFound
 import com.jerome.shortener.model.SaveUrlRepositoryError
 import com.jerome.shortener.model.Url
+import com.jerome.shortener.model.UrlId
 import doobie._
 import doobie.implicits._
 import zio._
@@ -17,7 +18,7 @@ case class DoobieUrlRepository(dbTransactor: Transactor[Task]) extends UrlReposi
       .transact(dbTransactor)
       .foldZIO(error => Task.fail(error), _ => Task.succeed(()))
 
-  override def get(id: Url.Id): IO[GetUrlRepositoryError, Url] =
+  override def get(id: UrlId): IO[GetUrlRepositoryError, Url] =
     SQL
       .findById(id)
       .option
@@ -37,7 +38,7 @@ case class DoobieUrlRepository(dbTransactor: Transactor[Task]) extends UrlReposi
       .transact(dbTransactor)
       .foldZIO(
         error => IO.fail(SaveUrlRepositoryError(error)),
-        id => IO.succeed(Url(Url.Id(id), url))
+        id => IO.succeed(Url(UrlId(id), url))
       )
 
   object SQL {
@@ -53,7 +54,7 @@ case class DoobieUrlRepository(dbTransactor: Transactor[Task]) extends UrlReposi
       INSERT INTO URLS(url) VALUES ($url)
     """.update
 
-    def findById(id: Url.Id): Query0[Url] = sql"""
+    def findById(id: UrlId): Query0[Url] = sql"""
       SELECT id, url FROM URLS WHERE id = $id
     """.query[Url]
   }
