@@ -8,6 +8,6 @@ trait DBTransactor {
 }
 
 object DBTransactor {
-  def getTransactor: RManaged[Has[DBTransactor], Transactor[Task]] =
-    ZManaged.accessManaged(_.get.getTransactor)
+  def getTransactor: RManaged[DBTransactor, Transactor[Task]] =
+    ZManaged.environmentWithManaged(_.get.getTransactor)
 }

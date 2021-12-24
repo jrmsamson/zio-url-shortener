@@ -1,13 +1,9 @@
 package com.jerome.shortener
 
-import eu.timepit.refined.api.Refined
-import eu.timepit.refined.predicates.all._
-import eu.timepit.refined.string
-
 import scala.annotation.tailrec
 import scala.util.chaining._
 
-final case class Url(id: Url.Id, url: String Refined string.Url) {
+final case class Url(id: Url.Id, url: String) {
   import Url._
   // Alias = [a-zA-Z0-9]+
   def shorten: String = {
@@ -35,8 +31,8 @@ object Url {
     letter -> intModBase62
   }
 
-  def idFromAlias(urlAlias: String Refined NonEmpty): Url.Id =
-    urlAlias.value
+  def idFromAlias(urlAlias: String): Url.Id =
+    urlAlias
       .flatMap(letter => LetterToIntModBase62.get(letter.toString))
       .reverse
       .zipWithIndex

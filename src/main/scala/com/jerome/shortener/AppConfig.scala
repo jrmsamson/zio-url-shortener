@@ -9,11 +9,11 @@ final case class ApiConfig(baseUrl: String, port: Int)
 final case class DbConfig(url: String, driver: String, user: String, password: String)
 
 object AppConfig {
-  val layer: TaskLayer[Has[AppConfig]] =
+  val layer: TaskLayer[AppConfig] =
     Task
-      .effect(ConfigSource.default.loadOrThrow[AppConfig])
+      .attempt(ConfigSource.default.loadOrThrow[AppConfig])
       .toLayer
 
-  val apiConfig: URIO[Has[AppConfig], ApiConfig] = ZIO.service[AppConfig].map(_.apiConfig)
-  val dbConfig: URIO[Has[AppConfig], DbConfig]   = ZIO.service[AppConfig].map(_.dbConfig)
+  val apiConfig: URIO[AppConfig, ApiConfig] = ZIO.service[AppConfig].map(_.apiConfig)
+  val dbConfig: URIO[AppConfig, DbConfig]   = ZIO.service[AppConfig].map(_.dbConfig)
 }

@@ -1,39 +1,36 @@
 package com.jerome.shortener
 
-import cats.effect.Blocker
+import cats.effect._
 import doobie.h2.H2Transactor
 import doobie.util.transactor.Transactor
 import zio._
-import zio.blocking._
+import zio.interop.catz._
+import zio.interop.catz.implicits._
 
 import scala.concurrent.ExecutionContext
 
-case class H2DBTransactor(blocking: Blocking.Service, appConfig: AppConfig) extends DBTransactor {
+case class H2DBTransactor(appConfig: AppConfig) extends DBTransactor {
 
   override def getTransactor: TaskManaged[Transactor[Task]] =
     for {
-      connectEC  <- ZIO.descriptor.map(_.executor.asEC).toManaged_
-      transactor <- mkTransactor(appConfig.dbConfig, connectEC, blocking.blockingExecutor.asEC)
+      connectEC  <- ZIO.descriptor.map(_.executor.asExecutionContext).toManaged
+      transactor <- mkTransactor(appConfig.dbConfig, connectEC)
     } yield transactor
 
   private def mkTransactor(
     conf: DbConfig,
-    connectEC: ExecutionContext,
-    transactEC: ExecutionContext
-  ): TaskManaged[Transactor[Task]] = {
-    import zio.interop.catz._
+    connectEC: ExecutionContext
+  ): TaskManaged[Transactor[Task]] =
     H2Transactor
       .newH2Transactor[Task](
         conf.url,
         conf.user,
         conf.password,
-        connectEC,
-        Blocker.liftExecutionContext(transactEC)
+        connectEC
       )
       .toManagedZIO
-  }
 }
 
 object H2DBTransactor {
-  val layer: RLayer[Has[Blocking.Service] with Has[AppConfig], Has[DBTransactor]] = (H2DBTransactor(_, _)).toLayer
+  val layer: RLayer[AppConfig, DBTransactor] = (H2DBTransactor(_)).toLayer
 }

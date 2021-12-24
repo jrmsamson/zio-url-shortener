@@ -3,17 +3,15 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / organization := "com.jerome"
 ThisBuild / organizationName := "jerome"
 
-val ZioVersion           = "1.0.13"
-val ZioCatsVersion       = "2.2.0.1"
-val ZioLoggingVersion    = "0.5.4"
-val Http4sVersion        = "0.21.15"
-val DoobieVersion        = "0.10.0"
+val ZioVersion           = "2.0.0-RC1"
+val ZioCatsVersion       = "3.3.0-RC1"
+val Http4sVersion        = "1.0.0-M30"
+val DoobieVersion        = "1.0.0-RC1"
 val PureConfigVersion    = "0.14.0"
-val CirceVersion         = "0.13.0"
+val CirceVersion         = "0.14.1"
 val Slf4jVersion         = "1.7.30"
-val RefinedVersion       = "0.9.20"
 val ScalaTestPlusVersion = "3.2.3.0"
-val KindProjectorVersion = "0.11.3"
+val KindProjectorVersion = "0.13.2"
 
 lazy val root = (project in file("."))
   .settings(
@@ -22,8 +20,6 @@ lazy val root = (project in file("."))
       // ZIO
       "dev.zio" %% "zio"               % ZioVersion,
       "dev.zio" %% "zio-interop-cats"  % ZioCatsVersion,
-      "dev.zio" %% "zio-logging"       % ZioLoggingVersion,
-      "dev.zio" %% "zio-logging-slf4j" % ZioLoggingVersion,
       "dev.zio" %% "zio-test"          % ZioVersion % "test",
       "dev.zio" %% "zio-test-sbt"      % ZioVersion % "test",
       "dev.zio" %% "zio-test-magnolia" % ZioVersion % "test",
@@ -39,11 +35,9 @@ lazy val root = (project in file("."))
       "org.tpolecat" %% "doobie-core" % DoobieVersion,
       "org.tpolecat" %% "doobie-h2"   % DoobieVersion,
       // circe
-      "io.circe" %% "circe-core"    % CirceVersion,
-      "io.circe" %% "circe-generic" % CirceVersion,
-      "io.circe" %% "circe-parser"  % CirceVersion,
-      // refined
-      "eu.timepit"                   %% "refined"        % RefinedVersion,
+      "io.circe"                     %% "circe-core"     % CirceVersion,
+      "io.circe"                     %% "circe-generic"  % CirceVersion,
+      "io.circe"                     %% "circe-parser"   % CirceVersion,
       compilerPlugin(("org.typelevel" % "kind-projector" % KindProjectorVersion).cross(CrossVersion.full))
     ),
     testFrameworks ++= Seq(new TestFramework("zio.test.sbt.ZTestFramework")),

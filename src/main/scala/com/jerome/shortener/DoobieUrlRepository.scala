@@ -3,9 +3,6 @@ package com.jerome.shortener
 import com.jerome.shortener.GetUrlRepositoryError._
 import doobie._
 import doobie.implicits._
-import eu.timepit.refined._
-import eu.timepit.refined.api.Refined
-import eu.timepit.refined.string
 import zio._
 import zio.interop.catz._
 
@@ -14,28 +11,29 @@ case class DoobieUrlRepository(dbTransactor: Transactor[Task]) extends UrlReposi
   override def createTable: Task[Unit] =
     SQL.createTable.run
       .transact(dbTransactor)
-      .foldM(error => Task.fail(error), _ => Task.succeed(()))
+      .foldZIO(error => Task.fail(error), _ => Task.succeed(()))
 
   override def get(id: Url.Id): IO[GetUrlRepositoryError, Url] =
     SQL
       .findById(id)
       .option
       .transact(dbTransactor)
-      .foldM(
+      .foldZIO(
         error => IO.fail(GetUrlRepositoryError.Error(error)),
-        maybeUrl => IO.require(UrlNotFound(id))(IO.succeed(maybeUrl))
+        {
+          case Some(url) => ZIO.succeed(url)
+          case None      => ZIO.fail(UrlNotFound(id))
+        }
       )
 
-  override def save(url: String Refined string.Url): IO[SaveUrlRepositoryError, Url] =
+  override def save(url: String): IO[SaveUrlRepositoryError, Url] =
     SQL
       .insertUrl(url)
       .withUniqueGeneratedKeys[Int]("id")
       .transact(dbTransactor)
-      .foldM(error => IO.fail(SaveUrlRepositoryError(error)), id => IO.succeed(Url(Url.Id(id), url)))
+      .foldZIO(error => IO.fail(SaveUrlRepositoryError(error)), id => IO.succeed(Url(Url.Id(id), url)))
 
   object SQL {
-    implicit val putRefinedUrl: Put[String Refined string.Url] = Put[String].contramap(_.value)
-    implicit val getRefinedUrl: Get[String Refined string.Url] = Get[String].temap(refineV[string.Url](_))
 
     def createTable: Update0 = sql"""
       CREATE TABLE URLS (
@@ -44,7 +42,7 @@ case class DoobieUrlRepository(dbTransactor: Transactor[Task]) extends UrlReposi
       )
     """.update
 
-    def insertUrl(url: String Refined string.Url): Update0 = sql"""
+    def insertUrl(url: String): Update0 = sql"""
       INSERT INTO URLS(url) VALUES ($url)
     """.update
 
@@ -55,6 +53,6 @@ case class DoobieUrlRepository(dbTransactor: Transactor[Task]) extends UrlReposi
 }
 
 object DoobieUrlRepository {
-  val layer: ZLayer[Has[DBTransactor], Throwable, Has[UrlRepository]] =
+  val layer: ZLayer[DBTransactor, Throwable, UrlRepository] =
     DBTransactor.getTransactor.map(DoobieUrlRepository(_)).toLayer
 }

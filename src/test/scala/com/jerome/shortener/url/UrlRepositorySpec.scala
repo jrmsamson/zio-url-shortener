@@ -1,17 +1,15 @@
 package com.jerome.shortener
 
-import eu.timepit.refined.auto._
-import zio.blocking.Blocking
-import zio.test.Assertion._
-import zio.test.{TestConfig => _, _}
-import zio.test.environment.TestEnvironment
 import com.jerome.shortener.GetUrlRepositoryError._
+import zio.test.Assertion._
+import zio.test.ZIOSpecDefault
+import zio.test.{TestConfig => _, _}
 
-object UrlRepositorySpec extends DefaultRunnableSpec {
+object UrlRepositorySpec extends ZIOSpecDefault {
 
   override def spec: ZSpec[TestEnvironment, Any] =
     suite("UrlRepository Integration test")(
-      testM("should insert and get urls from DB") {
+      test("should insert and get urls from DB") {
         for {
           _               <- UrlRepository.createTable
           nonExistingUrlId = 1234
@@ -22,6 +20,6 @@ object UrlRepositorySpec extends DefaultRunnableSpec {
           assert(retrieved)(equalTo(inserted))
       }
     ).provideCustomLayer(
-      (AppConfig.layer >+> Blocking.live >+> H2DBTransactor.layer >+> DoobieUrlRepository.layer).orDie
+      (AppConfig.layer >+> H2DBTransactor.layer >+> DoobieUrlRepository.layer).orDie
     )
 }

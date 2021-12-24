@@ -1,34 +1,29 @@
 package com.jerome.shortener
 
 import io.circe._
-import org.http4s._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.http4s.circe.{jsonEncoderOf, jsonOf}
+import org.http4s._
+import org.http4s.circe._
 import org.http4s.headers.Location
 import org.http4s.implicits._
 import zio._
 import zio.interop.catz._
-import zio.logging.Logging
 import zio.test.Assertion._
+import zio.test.ZIOSpecDefault
 import zio.test.{TestConfig => _, _}
-import zio.logging.slf4j.Slf4jLogger
-import eu.timepit.refined.auto._
-import zio.test.environment.TestEnvironment
 
-object UrlRoutesSpec extends DefaultRunnableSpec {
-  type UrlServiceLayer = Has[UrlRepository] with Has[AppConfig] with Logging
+object UrlRoutesSpec extends ZIOSpecDefault {
+  type UrlServiceLayer = UrlRepository with AppConfig
   type UrlTask[A]      = RIO[UrlServiceLayer, A]
 
   implicit def circeJsonDecoder[A](implicit decoder: Decoder[A]): EntityDecoder[UrlTask, A] = jsonOf[UrlTask, A]
-  implicit def circeJsonEncoder[A](implicit decoder: Encoder[A]): EntityEncoder[UrlTask, A] =
-    jsonEncoderOf[UrlTask, A]
 
   private val urlService = UrlRoutes.routes[UrlServiceLayer].orNotFound
 
   override def spec: ZSpec[TestEnvironment, Any] =
     suite("UrlServiceSpec unit tests")(
-      testM("should shorten an url") {
+      test("should shorten an url") {
         for {
           apiConfig <- AppConfig.apiConfig
           result <- urlService.run(
@@ -52,12 +47,12 @@ object UrlRoutesSpec extends DefaultRunnableSpec {
             hasField(
               "headers",
               _.headers,
-              equalTo(Headers.of(Location(Uri.unsafeFromString("http://www.nonexistingurl.com"))))
+              equalTo(Headers(Location(Uri.unsafeFromString("http://www.nonexistingurl.com"))))
             )
           )
       }
     ).provideCustomLayer(
-      Slf4jLogger.make((_, msg) => msg) ++ TestConfig.test >+> TestUrlRepository.test
+      TestConfig.test >+> TestUrlRepository.test
     )
 
 }
