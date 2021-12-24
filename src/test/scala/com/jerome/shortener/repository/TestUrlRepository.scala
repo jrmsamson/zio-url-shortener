@@ -7,6 +7,7 @@ import com.jerome.shortener.model.Url
 import com.jerome.shortener.model.UrlId
 import com.jerome.shortener.repository.UrlRepository
 import zio._
+import java.net.URI
 
 class TestUrlRepository(urls: Ref[Seq[Url]]) extends UrlRepository {
   override def get(id: UrlId): IO[GetUrlRepositoryError, Url] = urls.get.flatMap { urls =>
@@ -16,7 +17,7 @@ class TestUrlRepository(urls: Ref[Seq[Url]]) extends UrlRepository {
     }
   }
 
-  override def save(url: String): IO[SaveUrlRepositoryError, Url] =
+  override def save(url: URI): IO[SaveUrlRepositoryError, Url] =
     for {
       newId <- urls.get.map(_.size + 1)
       newUrl = Url(id = UrlId(newId), url = url)

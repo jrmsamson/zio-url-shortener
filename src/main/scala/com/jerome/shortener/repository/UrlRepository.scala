@@ -6,10 +6,12 @@ import com.jerome.shortener.model.Url
 import com.jerome.shortener.model.UrlId
 import zio._
 
+import java.net.URI
+
 trait UrlRepository {
   def createTable: Task[Unit]
   def get(id: UrlId): IO[GetUrlRepositoryError, Url]
-  def save(url: String): IO[SaveUrlRepositoryError, Url]
+  def save(url: URI): IO[SaveUrlRepositoryError, Url]
 }
 
 object UrlRepository extends Accessible[UrlRepository] {
@@ -19,6 +21,6 @@ object UrlRepository extends Accessible[UrlRepository] {
   def get(id: UrlId): ZIO[UrlRepository, GetUrlRepositoryError, Url] =
     ZIO.serviceWithZIO(_.get(id))
 
-  def save(url: String): ZIO[UrlRepository, SaveUrlRepositoryError, Url] =
+  def save(url: URI): ZIO[UrlRepository, SaveUrlRepositoryError, Url] =
     ZIO.environmentWithZIO(_.get.save(url))
 }

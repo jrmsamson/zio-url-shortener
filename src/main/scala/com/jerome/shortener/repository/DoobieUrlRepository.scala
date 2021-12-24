@@ -11,6 +11,9 @@ import doobie.implicits._
 import zio._
 import zio.interop.catz._
 
+import java.net.URI
+import scala.util.Try
+
 case class DoobieUrlRepository(dbTransactor: Transactor[Task]) extends UrlRepository {
 
   override def createTable: Task[Unit] =
@@ -31,7 +34,7 @@ case class DoobieUrlRepository(dbTransactor: Transactor[Task]) extends UrlReposi
         }
       )
 
-  override def save(url: String): IO[SaveUrlRepositoryError, Url] =
+  override def save(url: URI): IO[SaveUrlRepositoryError, Url] =
     SQL
       .insertUrl(url)
       .withUniqueGeneratedKeys[Int]("id")
@@ -50,13 +53,14 @@ case class DoobieUrlRepository(dbTransactor: Transactor[Task]) extends UrlReposi
       )
     """.update
 
-    def insertUrl(url: String): Update0 = sql"""
-      INSERT INTO URLS(url) VALUES ($url)
+    def insertUrl(url: URI): Update0 = sql"""
+      INSERT INTO URLS(url) VALUES (${url.toString()})
     """.update
 
-    def findById(id: UrlId): Query0[Url] = sql"""
-      SELECT id, url FROM URLS WHERE id = $id
-    """.query[Url]
+    def findById(id: UrlId): Query0[Url] = {
+      import Url._
+      sql""" SELECT id, url FROM URLS WHERE id = $id""".query[Url]
+    }
   }
 }
 

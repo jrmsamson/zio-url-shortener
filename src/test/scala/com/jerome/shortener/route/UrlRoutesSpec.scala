@@ -18,6 +18,7 @@ import zio.interop.catz._
 import zio.test.Assertion._
 import zio.test.ZIOSpecDefault
 import zio.test.{TestConfig => _, _}
+import java.net.URI
 
 object UrlRoutesSpec extends ZIOSpecDefault {
   type UrlServiceLayer = UrlRepository with AppConfig
@@ -25,20 +26,21 @@ object UrlRoutesSpec extends ZIOSpecDefault {
 
   implicit def circeJsonDecoder[A](implicit decoder: Decoder[A]): EntityDecoder[UrlTask, A] = jsonOf[UrlTask, A]
 
-  private val urlService = UrlRoutes.routes[UrlServiceLayer].orNotFound
+  private val urlRoutes = UrlRoutes.routes[UrlServiceLayer].orNotFound
 
   override def spec: ZSpec[TestEnvironment, Any] =
-    suite("UrlServiceSpec unit tests")(
+    suite("UrlRoutes specs")(
       test("should shorten an url") {
         for {
           apiConfig <- AppConfig.getApiConfig
-          result <- urlService.run(
+          result <- urlRoutes.run(
                       Request[UrlTask](method = Method.POST, uri = Uri.unsafeFromString("/"))
-                        .withEntity(UrlShortenRequest("http://www.nonexistingurl.com").asJson)
+                        .withEntity(UrlShortenRequest(new URI("http://www.nonexistingurl.com")).asJson)
                     )
+          _           <- ZIO.succeed(println(s"RESULT ${result.status}"))
           urlResponse <- result.as[UrlShortenedResponse]
           urlAlias     = urlResponse.urlShortened.replace(s"http://${apiConfig.baseUrl}:${apiConfig.port}", "")
-          url <- urlService.run(
+          url <- urlRoutes.run(
                    Request[UrlTask](
                      method = Method.GET,
                      uri = Uri.unsafeFromString(urlAlias)

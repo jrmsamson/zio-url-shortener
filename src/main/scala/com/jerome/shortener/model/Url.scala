@@ -1,9 +1,17 @@
 package com.jerome.shortener.model
 
+import doobie.util.Get
+
+import java.net.URI
 import scala.annotation.tailrec
+import scala.util.Try
 import scala.util.chaining._
 
-final case class Url(id: UrlId, url: String)
+final case class Url(id: UrlId, url: URI)
+
+object Url {
+  implicit val uriGet: Get[URI] = Get[String].temap(str => Try(new URI(str)).toEither.left.map(_.getMessage()))
+}
 
 final case class UrlId(value: Int) extends AnyVal {
   import UrlId._

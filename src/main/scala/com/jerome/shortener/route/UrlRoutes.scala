@@ -43,11 +43,11 @@ object UrlRoutes {
                 ZIO.logError(s"Error getting url for the given alias: $exception") *>
                   InternalServerError("Error getting url for the given alias")
             },
-            url =>
+            urlShorten =>
               Task.succeed(
                 Response[UrlTask]()
                   .withStatus(Status.MovedPermanently)
-                  .withHeaders(Location(Uri.unsafeFromString(url.url)))
+                  .withHeaders(Location(Uri.unsafeFromString(urlShorten.url.toString())))
               )
           )
 
@@ -66,6 +66,7 @@ object UrlRoutes {
                 urlAlias => Created(UrlShortenedResponse(urlAlias).asJson)
               )
           }
+
     }
   }
 }
