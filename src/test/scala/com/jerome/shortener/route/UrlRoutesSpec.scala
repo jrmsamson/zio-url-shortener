@@ -18,6 +18,7 @@ import zio.interop.catz._
 import zio.test.Assertion._
 import zio.test.ZIOSpecDefault
 import zio.test.{TestConfig => _, _}
+
 import java.net.URI
 
 object UrlRoutesSpec extends ZIOSpecDefault {
@@ -37,7 +38,6 @@ object UrlRoutesSpec extends ZIOSpecDefault {
                       Request[UrlTask](method = Method.POST, uri = Uri.unsafeFromString("/"))
                         .withEntity(UrlShortenRequest(new URI("http://www.nonexistingurl.com")).asJson)
                     )
-          _           <- ZIO.succeed(println(s"RESULT ${result.status}"))
           urlResponse <- result.as[UrlShortenedResponse]
           urlAlias     = urlResponse.urlShortened.replace(s"http://${apiConfig.baseUrl}:${apiConfig.port}", "")
           url <- urlRoutes.run(

@@ -19,7 +19,7 @@ case class DoobieUrlRepository(dbTransactor: Transactor[Task]) extends UrlReposi
   override def createTable: Task[Unit] =
     SQL.createTable.run
       .transact(dbTransactor)
-      .foldZIO(error => Task.fail(error), _ => Task.succeed(()))
+      .foldZIO(error => Task.fail(error), Function.const(Task.succeed(())))
 
   override def get(id: UrlId): IO[GetUrlRepositoryError, Url] =
     SQL

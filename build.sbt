@@ -18,11 +18,10 @@ lazy val root = (project in file("."))
     name := "url-shortener-service",
     libraryDependencies ++= Seq(
       // ZIO
-      "dev.zio" %% "zio"               % ZioVersion,
-      "dev.zio" %% "zio-interop-cats"  % ZioCatsVersion,
-      "dev.zio" %% "zio-test"          % ZioVersion % "test",
-      "dev.zio" %% "zio-test-sbt"      % ZioVersion % "test",
-      "dev.zio" %% "zio-test-magnolia" % ZioVersion % "test",
+      "dev.zio" %% "zio"              % ZioVersion,
+      "dev.zio" %% "zio-interop-cats" % ZioCatsVersion,
+      "dev.zio" %% "zio-test"         % ZioVersion % "test",
+      "dev.zio" %% "zio-test-sbt"     % ZioVersion % "test",
       // PureConfig
       "com.github.pureconfig" %% "pureconfig" % PureConfigVersion,
       // Slf4j
